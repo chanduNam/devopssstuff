@@ -1,0 +1,178 @@
+﻿	## Reference : https://about.gitlab.com/installation/#centos-7?version=ce
+
+IP=$(curl ifconfig.me)
+curl -sS https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | sudo bash
+sudo EXTERNAL_URL="http://$IP" yum install -y gitlab-ce
+
+echo -e "You can loging to the server using following URL and with username root and setup the password during first login"
+
+echo -e "GitLab URL = http://$IP"
+
+
+
+
+curl ifconfig.me -gives public ip of the system
+
+
+curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh | sudo bash
+
+
+
+curl https://github.com/citb30/gitlab/blob/master/install-gitlab.sh
+
+
+
+curl https://raw.githubusercontent.com/citb30/gitlab/master/install-gitlab.sh
+
+
+
+GitLab URL = http://104.196.215.215
+
+Chandu123 -> root pwd
+
+users)
+
+1)anjali/anjali@123	->anjali@456 (new resetpassword) (dev group)
+2)arjun/arjun@123(devgroup)  
+3)chandu/chandu@123 ->chandu@456   (eng group)
+4)balaram/balaram@123 -> balaram@456   (eng group)
+5)kavya/kavya@456  ->(owner)
+
+note: webserver is workstation here .and using chandu user to work on gitlab.
+
+Command line instructions
+
+Git global setup
+git config --global user.name "Chandu"
+git config --global user.email "chandu@github.com"
+
+git config --global user.name "arjun"
+git config --global user.email "arjun@github.com"
+
+
+Create a new repository
+git clone http://104.196.215.215/engineers/test.git
+cd test
+touch README.md
+git add README.md   (  git add -A will add all the modified files)
+git commit -m "add README"
+git push -u origin master
+
+Existing folder
+cd existing_folder
+git init
+git remote add origin http://104.196.215.215/engineers/test.git
+git add .
+git commit -m "Initial commit"
+git push -u origin master
+
+Existing Git repository
+cd existing_repo
+git remote rename origin old-origin
+git remote add origin http://104.196.215.215/engineers/test.git
+git push -u origin --all
+git push -u origin --tags
+==========================
+
+git push origin master
+
+
+
+git add README.md 
+git add README.md 
+git commit -m "README.md file"git add README.md
+git push origin master
+
+to get ssh url we have to use/save pub key in the users setting. 
+login to the user and go to settings -->ssh keys and the key.
+
+command: ssh-keygen  to generate pub and pem files.
+
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDznRkqRhhTtwBYo/L3RO6ZGTt7nnGqz57lNpeZz2Auq8aDZOKwYYgwX24y81awKGtAEJg8RpPSHftyODMj3OlOZQBKC+8gBe257cz1RRAz2e4WTOz5zsDc4x1l4dkRHJbZv4KZE0er5ICKxCVH8xYpIoDGrKRWjv7aQGnfJvkzIMkI5r1v36dfhd9RjpTcgQnkTJbhyj+6t+f+H+nE1CZoa3N3rsVizErW10mezN0XJyEFspI5DP4UBZJVK0bVMTurJZPUFoiJz4Tta2e7NNnp90Y2HPn+C8OK16kBoFyF4WVbAPyXPkqCcn9MBHtvp/j8ZsCD3t0L4gMwXJb2oL7R chandu@gitlabserver
+
+
+master -> is main branch 
+
+
+
+owner can crete a group repository . but others can't.
+
+git branch -a -> gives all the branches.
+
+git branch 'work1' -> it creates a branch called work.
+git checkout work1  -> 
+
+NOTE: only the perticular group members(users) only can access the repository
+
+
+
+ROLE PERMISSIONS
+----------------
+1)DEVELOPER: can create branches and can push to the branche(which created by him/her) but cannot push to the master branch.
+2)reporter: can downlod the code.browse the group
+3)guest: cannot access the code, downlod code. but only can know the issue status.
+
+
+-------------------------------------------------------------------
+anisble and jenkin integration
+==============================
+host_key_checking = False -> ansible.cnf -> it will not yes/no for every node
+roles_path    = roles  -> roles path in ansible.cnf
+
+create roles ,template tassk and push all the code to the master repogitory
+
+git add -A
+git commit -m "creted locl facts playbooks"
+ git push origin master
+
+ give the below url in jenkin 	(source code management)
+
+http://104.196.215.215/engineers/ansible.git
+
+
+
+-------------------
+quetions and answers
+---------------------
+
+1.What is Git?
+
+Git is one of the most popular frameworks for source code control. It has been widely adopted in the open source community and many corporations use Git as their source control framework of choice. it is very fast and very flexible, while being straightforward to use.
+
+2.What is GIT stash?
+
+In case if you are in the middle of something/task and need to jump over to the other job, and at the same time you don’t want to lose/destroy your current edits then you can use GIT stash.
+
+3.What is the use of ‘git log’?
+
+‘git log’ Show commit logs
+we can find specific commits in your project history / metadata repository – by author, date, content or history ‘git log’ is used.
+4.What is SourceTree (ST)?
+
+There are two ways to work with Git: from the command line or from a graphical user interface (GUI). SourceTree is the most popular cross-platform GUI for Git.
+
+5.What is ‘git add’ is used for?
+
+‘git add’ adds file changes in your existing directory to your index.
+‘git add’ Add file contents to the index
+6.What are the differences between ‘git pull’ and ‘git fetch’?
+
+Git pull automatically merges the commits without letting you review them first.
+Git fetch stores them in your local repository but it not merge them with your current branch.
+git fetch similar to git pull but it does not merge the changes.
+7.What is another option for merging in git?
+
+git merge, Join two or more development histories together
+git rebase,  Reapply commits on top of another base tip
+Rebasing” is an alternative to merging the branch in git.
+8.What language is used in GIT?
+
+GIT is fast, and ‘C’ language makes this possible by reducing the overhead of runtimes associated with higher languages.
+
+9.What is a ‘conflict’ in git?
+
+A ‘conflict’ arises when the commit that has to be merged has some change in one place, and the current commit also has a change at the same place. Git will not be able to predict which change should take precedence.
+
+10.What is ‘bare repository’ in GIT?
+
+To co-ordinate with the distributed development and developers team, especially when you are working on a project from multiple computers ‘Bare Repository’ is used. A bare repository comprises of a version history of your code.
