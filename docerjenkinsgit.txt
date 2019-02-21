@@ -1,0 +1,118 @@
+docker -v -> gives docker version
+docker info - gives information about docer containers ,images and status of them llike running ,stopped ,paused 	
+docker --help -> information about docker commands.
+docker ps -> gives running container and images.
+[ec2-user@workstation ~]$ docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+d8f1fbb6fded        ubuntu              "/bin/bash"         4 minutes ago       Up 4 minutes                            mystifying_hopper
+docker login -> login to the docker hup.
+dockerhub is docker repogitory where we can push the images. intially we need to create account in dockerhub. 
+docker images -> will give all the images.
+docker pull ubuntu -> pulls the ubuntu image from docker hup.
+docker images -a -> gives all the details of images
+
+exp:
+
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+docker.io/ubuntu    latest              20bb25d32758        8 days ago          87.5 MB
+namwade/test        1                   89a3549983b4        2 weeks ago         305 MB
+docker.io/mariadb   latest              2bdd97ca79d9        3 weeks ago         366 MB
+docker.io/centos    7                   1e1148e4cc2c        8 weeks ago         202 MB
+docker.io/centos    latest              1e1148e4cc2c        8 weeks ago         202 MB
+
+
+docker rmi --help -> gives details of rmi command
+docker run -it ubuntu -> run docker container with interactive mode
+
+root@d8f1fbb6fded:/# ls
+bin  boot  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+
+
+docker stop 1d934d3ce6b7 ->  stopt the container using container id.
+
+[ec2-user@workstation ~]$ docker system df
+TYPE                TOTAL               ACTIVE              SIZE                RECLAIMABLE
+Images              4                   3                   758.5 MB            304.9 MB (40%)
+Containers          11                  1                   116 MB              116 MB (100%)
+Local Volumes       4                   3                   239.6 MB            0 B (0%)
+[ec2-user@workstation ~]$ 
+
+
+[ec2-user@workstation ~]$ docker system prune  -> will remove all stopped containers,valumes .
+WARNING! This will remove:
+	- all stopped containers
+	- all volumes not used by at least one container
+	- all networks not used by at least one container
+	- all dangling images
+Are you sure you want to continue? [y/N] 
+===============================================
+
+
+git status -> gives commit status of files
+git fetch -> downloads new data from remote repogitory .does not inegrate any of the new data into your working files
+             git fetch can be done any time to update the remote tracking branches
+git pull -> updates current head branch with latest chanes from the remote server.it downloads new data and 			      integrates withurrent working files .it tries to merge remote changes with your local files.
+git stash -> when we want to switch to another brabch to work on something else but you dont want to commit the changes to your]
+             unfinished work then we use 'git stash' . it takes your modfied trcked files and save it on a stack of unfinished
+			 changes that you can reapply at any time. 
+CI-> continously commit the code.
+Con-delevery -> making the code available for deployment
+pipeline:-> user defined model of a CD pipeline. pipeline's code defines entiere build process, that includes building ,testing,
+and delevering a application.
+
+NODE: A machine which is part of jenkins environment capable of executing a pipeline
+step: a single task that tells jenkins what to do at a perticular time.
+
+
+stage: difines a concesptually distinct sebsest of tasks performed through the entire pipeline(build ,test,deploye)
+
+-> There are two types of pipelines in jenkins. 1. scripted pipeline 2. declarative
+
+scripted pipeline : its based on groovy script as their domain specific languange .one or more node blocks does the core work
+through out the entire pipeline.
+
+-> what are the ways in which a build can be scheduled/run in jenkins.
+ 1. by  sourch code management commits
+ 2.after completion of other build
+ 3.schedule to run at spcified time
+ 4.manual build request.
+ 
+->Two ways to restart jenkins manually. 
+ 1. (jenkins_url)/restart -> forces a restart without waiting for build to complete
+ 2. (jenkins_url)/safeRestart -> allows all runnig builds to complete before restart
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+ 
