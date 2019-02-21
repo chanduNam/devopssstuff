@@ -1,0 +1,91 @@
+elasticserch - where we keep logs.
+logstash -collect the data and send the data to databse i.e its a collecter
+kibana - is a dashbord where we can see the logs.
+
+curl https://raw.githubusercontent.com/citb30/elkstack/master/setup.sh | bash 
+----------------------------------------------------------
+
+[root@elk ~]# curl https://raw.githubusercontent.com/citb30/elkstack/master/setup.sh | bash
+✓  Disabled FIREWALL Successfully
+✓  Installing Java
+✓  Installing Elastic Search
+✓  Starting Elastic Search
+✓  Installing LogStash
+✓  Starting LogStash
+✓  Installing Kibana
+✓  Starting Kibana
+-----------------------------------
+default port is 5601
+
+login: IP:5601
+
+
+Now Install beats (we use filebeat RPM-) software on perticular servers(studevnode ...)
+
+(https://www.elastic.co/downloads/beats/filebeat)
+
+ yum install  https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.5.4-x86_64.rpm -y
+ 
+ configure filebeat.yml file (/etc/filebeat/filebeat.yml) as below
+
+ 
+ NOTE: filebeat is instlled on stuprodapp01 server
+ 
+ paths:
+    - /var/log/messages
+	
+
+output.logstash:
+ # The Logstash hosts
+ hosts: ["elk:5044"]
+
+	
+	
+filebeat gives gives input(logs) to logstash and logstash converts the logs(line) into formated field.
+
+
+we use grok filter .
+
+ex: below ins log line
+
+Jan 23 05:40:01 stuprodapp01 systemd: Removed slice User Slice of root.
+
+below is filter for the above line.
+NOTE: no of spaces also mandatroy we should follow the exacat stucutre i.e spaces colon, camma.
+
+%{MONTH} %{MONTHDAY} %{HOUR}:%{MINUTE}:%{SECOND} %{HOSTNAME} %{WORD}: %{GREEDYDATA}
+
+MONTH -> indicates  monthe
+MONTHDAY indicates month day
+HOUR - hour
+MINUTE -minute
+SECOND -seconds
+WORD -> replaces the exacat word in the logs.
+
+GREEDYDATA  -> gives rest of data which is log.
+
+
+
+ systemctl restart logstash
+
+[root@elk conf.d]# tail -f /var/log/logstash/logstash-plain.log 
+
+
+sudo systemctl start filebeat
+
+[root@stuprodapp01 ~]# tail -f /var/log/filebeat/filebeat 
+
+/etc/logstash/conf.d/system.conf -> this logs file we have to careate and do the configuration
+
+GET /_cat/indices?v  -> get all indeces
+
+DELETE logstash-2019.01.23 --> delete indeces
+
+goto kibana dashbord ->management->index pattern . we have to create an index pattern .
+
+once pattern created we will able to see the messages(logs) in formated fields
+
+
+	
+	
+	
