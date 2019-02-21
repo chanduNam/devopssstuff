@@ -1,0 +1,82 @@
+install nexus using below URL.
+curl https://raw.githubusercontent.com/citb30/nexus/master/install.sh |bash
+
+user/pwd:
+admin/admin/
+URL: IP:8081
+
+we will have two majar repogitories.
+1. maven-release(used in production)
+2. maven-snapshot(used in dev env)
+
+===========================
+below changes needs to done in pom.xml
+
+<distributionManagement>
+        <repository>
+            <id>deployment</id>
+            <name>Releases</name>
+            <url>http://nexus:8081/repository/student-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>deployment</id>
+            <name>Snapshots</name>
+            <url>http://nexus:8081/repository/student-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+to upload the code to nexus repogitory we have update the credentials in setting.ml(in jenkins
+
+1.cp /etc/maven/settings.xml 
+
+ <server>
+      <id>deployment</id> --> id is pom.xml id
+      <username>admin</username>  -> nexus username
+      <password>admin123/password> --> nexus password
+    </server>
+
+	
+	
+	  ===================================
+change version i.e snapshot /release
+
+	   <groupId>com.srk</groupId>
+        <artifactId>studentapi</artifactId>
+        <version>1.0.3-SNAPSHOT</version> ->    if we want release update RELEASE in version tag.
+        <packaging>war</packaging>
+exple:
+
+		<groupId>com.srk</groupId>
+        <artifactId>studentapi</artifactId>
+        <version>1.0.3-RELEASE</version>
+		<packaging>war</packaging>
+		
+	SNAPSHOT   
+	-------------
+	changes merged to sub branch is called as snapshot
+	
+	RELEASE
+	---------
+	changes merged to masster branch is called	as release  
+	   
+-------------------------------
+
+NOTE:
+
+whenever sprints starts in jira
+
+1. create a feature branch in GIT
+2. developers own stories and create theier own branches from feature branch and start workin on it.
+3. they merge the code into feature branch.
+4. end of the sprint a pull request will be raised to merge the code from release(feature branch) branch to master branch
+
+ In jenkins we will have one job for master branch to pull the code.
+ but every time new feature branch comes we have to create new pipeline job
+
+
+Use below command to override release/snapshot version
+
+mvn versions:set -DnewVersion=1.0.3-SNAPSHOT
+and run --> mvn deploy -> to create the snapshot/release
+
