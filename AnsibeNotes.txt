@@ -1,0 +1,44 @@
+1)A single host can be part of multiple groups. In such cases, host variables
+from both the groups will get merged, and the precedence rules apply.
+We will discuss variables and precedence in detail later.
+2)Each action in a task list can be declared by specifying the following:
+• The name of the module
+• Optionally, the state of the system component being managed
+• The optional parameters
+3)Modules are the encapsulated procedures that are responsible for managing specific
+system components on specific platforms.
+ex: 
+• The apt module for Debian and the yum module for RedHat helps manage system packages
+• The user module is responsible for adding, removing, or modifying users on the system
+• The service module will start/stop system services
+NOTE: 
+The Command and Shell modules are special ones. They
+neither take key-value pairs as parameters, nor are idempotent
+
+
+4)The modules and idempotence
+-------------------------------
+Idempotence is an important characteristic of a module. It is something which can be
+applied on your system multiple times, and will return deterministic results. It has
+built-in intelligence. For instance, we have a task that uses the apt module to install
+Nginx and ensure that it's up to date. Here is what happens if you run it multiple times:
+
+• Every time idempotance is run multiple times, the apt module will compare
+what has been declared in the playbook versus the current state of that
+package on the system. The first time it runs, Ansible will determine that
+Nginx is not installed, and will go ahead with the installation.
+
+• For every consequent run, it will skip the installation part, unless there is
+a new version of the package available in the upstream repositories.
+This allows executing the same task multiple times without resulting in the error
+state. Most of the Ansible modules are idempotent, except for the command and
+shell modules. Users will have to make these modules idempotent.
+
+5)What if a host is unresponsive, or fails to run tasks? Ansible
+has built-in intelligence, which will identify such issues
+and take the failed host out of rotation. It will not affect the
+execution on other hosts.
+
+6)You can find facts about any system by running the following command followed by
+a shortened output:
+$ ansible -i customhosts www -m setup | less
