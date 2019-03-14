@@ -1,0 +1,253 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Student Stack Application"
+
+Mappings: 
+  projdata: 
+    us-east-1: 
+      ami: ami-013ce44cde5fb1476
+      keypair: devops
+      DBUsername: admin
+      DBPassword: admin123
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      InstanceTenancy: default
+      Tags:
+      - Key: Name
+        Value: student-vpc
+      - Key: PROJECT
+        Value: STUDENT 
+  
+  SubnetPrivateA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.0.0.0/24
+      AvailabilityZone: "us-east-1a"
+      Tags:
+      - Key: Name
+        Value: SubnetA-Private 
+      - Key: PROJECT
+        Value: STUDENT
+
+  SubnetPrivateB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: "us-east-1b"
+      Tags:
+      - Key: Name
+        Value: SubnetB-Private 
+      - Key: PROJECT
+        Value: STUDENT
+
+  SubnetPublicA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.0.2.0/24
+      MapPublicIpOnLaunch: 'true'
+      AvailabilityZone: "us-east-1a"
+      Tags:
+      - Key: Name
+        Value: SubnetA-Public 
+      - Key: PROJECT
+        Value: STUDENT
+  
+  SubnetPublicB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.0.3.0/24
+      MapPublicIpOnLaunch: 'true'
+      AvailabilityZone: "us-east-1b"
+      Tags:
+      - Key: Name
+        Value: SubnetB-Public 
+      - Key: PROJECT
+        Value: STUDENT
+
+  IGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: Student-VPC-IGW
+
+  IgwVpcAttach:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VPC
+      InternetGatewayId:
+        Ref: IGW
+  
+  PublicRT:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: Public-Route
+  
+  PrivateRT:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: Private-Route
+  
+  IGWRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: PublicRT
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: IGW 
+
+  PublicSubnetARTAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: SubnetPublicA
+      RouteTableId:
+        Ref: PublicRT
+  
+  PublicSubnetBRTAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: SubnetPublicB
+      RouteTableId:
+        Ref: PublicRT
+
+  GlobalSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow ssh access to client host
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+
+  DBSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow mysql access to client host
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 3306
+        ToPort: 3306
+        CidrIp: 0.0.0.0/0
+  
+  AsocDBSG:
+    Type: AWS::RDS::DBSecurityGroup
+    Properties: 
+      GroupDescription: "Ingress for Amazon EC2 security group"
+      EC2VpcId:
+        Ref: VPC
+      DBSecurityGroupIngress: 
+        - EC2SecurityGroupId:
+            Ref: DBSG
+
+  MariaDBSubnetGroup: 
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties: 
+      DBSubnetGroupDescription: "MariaDB Subnet Group"
+      SubnetIds: 
+        - Ref: SubnetPrivateA
+        - Ref: SubnetPrivateB
+      Tags: 
+        - Key: Name
+          Value: MariaDB-Subnet-Group 
+  
+  ### DB Instance creation.
+  MariaDBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: studentdb
+      DBInstanceIdentifier: studentrds
+      Engine: MySQL
+      DBInstanceClass: "db.t2.micro"
+      AllocatedStorage: 20
+      MasterUsername:  !FindInMap [projdata, !Ref "AWS::Region", DBUsername]
+      MasterUserPassword: !FindInMap [projdata, !Ref "AWS::Region", DBPassword]
+      MultiAZ: false
+      DBSubnetGroupName:
+        Ref: MariaDBSubnetGroup
+      BackupRetentionPeriod: 7
+    
+  ### Instance to launch schema 
+  SchemaInstance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: !FindInMap [projdata, !Ref "AWS::Region", ami]
+      SecurityGroupIds: 
+        - Ref: GlobalSG
+      InstanceType: t2.micro  
+      SubnetId: 
+        Ref: SubnetPublicA
+      KeyName: !FindInMap [projdata, !Ref "AWS::Region", keypair]
+      UserData:
+        Fn::Base64:
+          Fn::Sub:
+           - |
+             #!/bin/bash
+             yum install mariadb -y
+             curl -s https://raw.githubusercontent.com/cit-agnitio/documentation/master/student.sql >/tmp/student.sql
+             mysql -h ${DBIP} -u ${DBUsername} -p${DBUsername} </tmp/student.sql
+
+           - {
+             DBUsername: !FindInMap [ projdata, !Ref "AWS::Region", DBUsername ],
+             DBUsername: !FindInMap [ projdata, !Ref "AWS::Region", DBPassword ],
+             DBIP: !GetAtt MariaDBInstance.Endpoint.Address
+             }
+  Tomcat1:
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: !FindInMap [projdata, !Ref "AWS::Region", ami]
+      SecurityGroupIds: 
+        - Ref: GlobalSG
+      InstanceType: t2.micro  
+      SubnetId: 
+        Ref: SubnetPublicA
+      KeyName: !FindInMap [projdata, !Ref "AWS::Region", keypair]
+      UserData:
+        Fn::Base64:
+          Fn::Sub:
+           - |
+             #!/bin/bash
+             yum install java -y
+             cd /opt
+             wget -qO - http://mirrors.wuchna.com/apachemirror/tomcat/tomcat-9/v9.0.11/bin/apache-tomcat-9.0.11.tar.gz | tar -xz
+             wget https://github.com/cit-agnitio/documentation/raw/master/student.war -O /opt/apache-tomcat-9.0.11/webapps/student.war
+             wget https://github.com/cit-aliqui/APP-STACK/raw/master/mysql-connector-java-5.1.40.jar -O /opt/apache-tomcat-9.0.11/lib/mysql-connector-java-5.1.40.jar
+             CONTEXT="<Resource name="jdbc/TestDB" auth="Container" type="javax.sql.DataSource" maxActive="50" maxIdle="30" maxWait="10000" username="student" password="student@1" driverClassName="com.mysql.jdbc.Driver" url='jdbc:mysql://${DBIP}:3306/studentapp'/>"
+             sed -i -e "$ i $CONTEXT" /opt/apache-tomcat-9.0.11/conf/context.xml
+           - {
+             DBUsername: !FindInMap [ projdata, !Ref "AWS::Region", DBUsername ],
+             DBUsername: !FindInMap [ projdata, !Ref "AWS::Region", DBPassword ],
+             DBIP: !GetAtt MariaDBInstance.Endpoint.Address
+             }
+
+
+

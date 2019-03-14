@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Mappings: 
+  projdata: 
+    us-east-1: 
+      ami: "ami-013ce44cde5fb1476"
+      keypair: devops
+
+Resources: 
+  sgwithoutegress:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Limits security group egress traffic
+      VpcId: vpc-c629e7be
+      SecurityGroupEgress:
+      - CidrIp: 127.0.0.1/32
+        IpProtocol: "-1"
+
+  SchemaInstance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: !FindInMap [projdata, !Ref "AWS::Region", ami]
+      SubnetId: subnet-f16d73dd
+      KeyName: !FindInMap [projdata, !Ref "AWS::Region", keypair]
+      InstanceType: t2.micro
+      UserData:
+        Fn::Base64:
+          Fn::Sub:
+           - |
+             #!/bin/bash
+             echo ${KEYNAME} >/tmp/out
+             echo ${SGNAME} >>/tmp/out
+           - {
+             KEYNAME: !FindInMap [ projdata, !Ref "AWS::Region", keypair ],
+             SGNAME: !GetAtt sgwithoutegress.GroupId
+             }
+

@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Sample Ec2 Creation
+Resources:
+  EC2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "ami-013ce44cde5fb1476"
+      KeyName: "devops"
+      InstanceType: "t2.micro"
+      SubnetId: "subnet-f16d73dd"
+      SecurityGroupIds:
+        - sg-9ec969ec
+      Tags:
+        - Key: Name 
+          Value: CF-S1
+          
